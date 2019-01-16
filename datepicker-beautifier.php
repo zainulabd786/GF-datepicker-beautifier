@@ -15,7 +15,7 @@ function dpb_enqueue_script() {
 add_action('wp_enqueue_scripts', 'dpb_enqueue_script');
 
 
-function dpb_datepicker_styles(){ ?>
+function dpb_datepicker_styles($args){ ?>
 	<style>
 		.ui-datepicker select {
 			-webkit-appearance: none!important;
@@ -32,7 +32,7 @@ function dpb_datepicker_styles(){ ?>
 			color: #fff!important;
 		}
 		.ui-datepicker-header{
-			background-color: #FC4740
+			background-color: <?= $args['headerColor'] ?>
 		}
 		.ui-datepicker-prev span{
 			color: #fff!important;
@@ -98,7 +98,7 @@ function dpb_datepicker_styles(){ ?>
 		}
 	</style><?php
 }
-add_action("wp_footer", "dpb_datepicker_styles");
+//add_action("wp_footer", "dpb_datepicker_styles");
 
 
 
@@ -120,6 +120,19 @@ add_action("wp_footer", "dpb_datepicker_styles");
     }
 }
 add_action( 'gform_field_appearance_settings', 'my_function', 10, 2 );*/
+
+
+
+add_filter( 'gform_field_content', 'dbp_render_styles', 10, 5 );
+function dbp_render_styles( $field_content, $field ){
+	//echo "<pre>"; print_r($field); echo "</pre>";
+	if ( $field->type == 'date' ) {
+		$headerColor = $field->headerColor;
+		//dpb_datepicker_styles(array('headerColor' => $headerColor));
+		$field = json_encode($field);
+	}
+	return $field_content;
+}
 
 
 
@@ -164,16 +177,3 @@ function field_settings_js() {
 
 <?php
 }
-
-add_filter( 'gform_input_mask_script', 'set_mask_script', 10, 4 );
-function set_mask_script( $script, $form_id, $field_id, $mask ) {
-    $script = "jQuery('#input_{$form_id}_{$field_id}').mask('" . esc_js( $mask ) . "',{placeholder:' '}).on('keypress', function(e){if(e.which == 13){jQuery(this).blur();} } );";
- 
-    return $script;
-}
-
-/*add_filter( 'gform_pre_form_settings_save', 'save_my_custom_form_setting' );
-function save_my_custom_form_setting($form) {
-    $form['my_custom_setting'] = rgpost( 'my_custom_setting' );
-    return $form;
-}*/

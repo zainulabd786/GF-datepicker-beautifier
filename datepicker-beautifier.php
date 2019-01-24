@@ -18,6 +18,10 @@ add_action('wp_enqueue_scripts', 'dpb_enqueue_script');
 function dpb_datepicker_styles($args){ ?>
 	<div class="dpb-styles">
 	<style>
+		.ui-datepicker-week-end{
+			color: red;
+		}
+		
 		.ui-datepicker select {
 			-webkit-appearance: none!important;
 			-moz-appearance: none!important;
@@ -34,6 +38,9 @@ function dpb_datepicker_styles($args){ ?>
 		}
 		.ui-datepicker-header{
 			background-color: <?= $args['headerColor'] ?>
+		}
+		.ui-datepicker-header{
+			border-width: 0px 0 0 !important;
 		}
 		.ui-datepicker-next, .ui-datepicker-prev{
 			line-height: 300%!important;
@@ -56,12 +63,24 @@ function dpb_datepicker_styles($args){ ?>
 		}
 		.ui-datepicker a{
 			border: none;
+			text-shadow: none !important;
 		}
 		.ui-datepicker tbody td, .ui-datepicker tbody tr, .ui-datepicker thead{
 			border: none;
 		}
 		.ui-datepicker-calendar .ui-state-default{
 			background: #fff;
+			-webkit-box-shadow: none !important;
+			box-shadow: none !important;
+			text-shadow: none !important; 
+		}
+		 .ui-datepicker-footer{
+			border-radius: 0 0 8px 8px;
+		}
+		.ui-datepicker{
+			box-shadow: 0 0 32px 0 rgba(0, 0, 0, 0.1);
+			/*-webkit-box-shadow: none !important;
+			box-shadow: none !important;*/
 		}
 		.ui-datepicker-today a{
 			background: #FC4740!important;
@@ -81,18 +100,26 @@ function dpb_datepicker_styles($args){ ?>
 		.ui-datepicker-footer{
 			padding: 20px;
 			text-align: center;
-			background-color: #F9F9F9;
+			margin-top: -10px
+			/*background-color: #F9F9F9;*/
 		}
 		.ui-datepicker-next-year, .ui-datepicker-prev-year{
 			cursor: pointer;
 			font-family: inherit;
 			font-size: 16px;
+			font-weight: bolder;
+			display: flex;
+			justify-content: center;
+			align-items: center;
 		}
 		.ui-datepicker-next-year{
 			float: right;
 		}
 		.ui-datepicker-prev-year{
 			float: left;
+		}
+		.ui-datepicker-calendar .ui-state-active{
+			border: none!important;
 		}
 	</style>
 	</div><?php
@@ -109,10 +136,14 @@ function get_field_object(){
 	wp_die();
 }
 
-add_action( 'gperk_field_settings', 'dpb_calendar_appearance' ) ;
-function dpb_calendar_appearance() {
+//add_action( 'gperk_field_settings', 'dpb_calendar_appearance' ) ;
+add_action( 'gform_field_appearance_settings', 'dpb_calendar_appearance', 10, 2 );
+function dpb_calendar_appearance($placement, $form_id) {
+	$form = GFAPI::get_form( $form_id );
+	//echo "<pre>"; print_r($form); echo "</pre>";
+	if( $placement == 500 ) {
     ?>
-	<h3>
+	<h3 class="dpb-calendar-appearance-setting">
 		Datepicker Settings	
 	</h3>
 	<li class="dpb-calendar-appearance-setting field_setting">
@@ -127,7 +158,7 @@ function dpb_calendar_appearance() {
 			<option value="lg">large</option>
 		</select>
     </li>
-	<h4>
+	<h4 class="dpb-calendar-appearance-setting">
 		Header
 	</h4>
     <li class="dpb-calendar-appearance-setting field_setting">
@@ -174,7 +205,7 @@ function dpb_calendar_appearance() {
         </label>
         <input type="text" id="dpbca-header-arrow-size" onchange="SetFieldProperty( 'headerArrowSize', this.value);">
     </li>
-    <h4>
+    <h4 class="dpb-calendar-appearance-setting">
 		Week Strip
 	</h4>
 	<li class="dpb-calendar-appearance-setting field_setting">
@@ -203,7 +234,7 @@ function dpb_calendar_appearance() {
         </label>
         <input type="color" id="dpbca-week-strip-font-color" onchange="SetFieldProperty( 'weekStripFontColor', this.value);">
     </li>
-	<h4>
+	<h4 class="dpb-calendar-appearance-setting">
 		Calendar Body
 	</h4>
     <li class="dpb-calendar-appearance-setting field_setting">
@@ -221,7 +252,7 @@ function dpb_calendar_appearance() {
 				_e( 'Date Font Color' );
 			?>
         </label>
-        <input type="color" id="dpbca-date-font-color" onchange="SetFieldProperty( 'dateFontcolor', this.value);">
+        <input type="color" id="dpbca-date-font-color" onchange="SetFieldProperty( 'dateFontColor', this.value);">
     </li>
 
     <li class="dpb-calendar-appearance-setting field_setting">
@@ -239,7 +270,7 @@ function dpb_calendar_appearance() {
 				_e( 'Date Background Color' );
 			?>
         </label>
-        <input type="color" id="dpbca-date-background-color" onchange="SetFieldProperty( 'dateBackgroundcolor', this.value);">
+        <input type="color" id="dpbca-date-background-color" onchange="SetFieldProperty( 'dateBackgroundColor', this.value);">
     </li>
 
     <li class="dpb-calendar-appearance-setting field_setting">
@@ -249,6 +280,15 @@ function dpb_calendar_appearance() {
 			?>
         </label>
         <input type="text" id="dpbca-highlighted-date-font-size" onchange="SetFieldProperty( 'highlatedDateFontSize', this.value);">
+    </li>
+
+	<li class="dpb-calendar-appearance-setting field_setting">
+        <label for="dpbca-highlighted-date-line-height">
+            <?php 
+				_e( 'Highlighted Date Line Height' );
+			?>
+        </label>
+        <input type="text" id="dpbca-highlighted-date-line-height" onchange="SetFieldProperty( 'highlatedDateLineHeight', this.value);">
     </li>
 
     <li class="dpb-calendar-appearance-setting field_setting">
@@ -277,7 +317,24 @@ function dpb_calendar_appearance() {
         </label>
         <input type="text" id="dpbca-highlighted-date-border-radius" onchange="SetFieldProperty( 'highlatedDateBorderRadius', this.value);">
     </li>
-	<h4>
+	<li class="dpb-calendar-appearance-setting field_setting">
+        <label for="dpbca-disabled-date-color">
+            <?php 
+				_e( 'Disabled Date Color' );
+			?>
+        </label>
+        <input type="color" id="dpbca-disabled-date-color" onchange="SetFieldProperty( 'disableDateColor', this.value);">
+    </li>
+
+    <li class="dpb-calendar-appearance-setting field_setting">
+        <label for="dpbca-disabled-date-background-color">
+            <?php 
+				_e( 'Disabled Date Background Color' );
+			?>
+        </label>
+        <input type="color" id="dpbca-disabled-date-background-color" onchange="SetFieldProperty( 'disableDateBackgroundColor', this.value);">
+    </li>
+	<h4 class="dpb-calendar-appearance-setting">
 		Footer
 	</h4>
     <li class="dpb-calendar-appearance-setting field_setting">
@@ -323,18 +380,9 @@ function dpb_calendar_appearance() {
 			?>
         </label>
         <input type="text" id="dpbca-footer-font-size" onchange="SetFieldProperty( 'footerFontSize', this.value);">
-    </li>
-
-    <li class="dpb-calendar-appearance-setting field_setting">
-        <label for="dpbca-disabled-date-color">
-            <?php 
-				_e( 'Disabled Date Color' );
-			?>
-        </label>
-        <input type="color" id="dpbca-disabled-date-color" onchange="SetFieldProperty( 'disableDateColor', this.value);">
-    </li>
-    
+    </li>    
     <?php
+	}
 }
 
 add_action( 'gform_editor_js', 'field_settings_js' );
@@ -354,18 +402,20 @@ function field_settings_js() { ?>
 				$( '#dpbca-week-strip-font-color' ).val(field['weekStripFontColor']);
 				$( '#dpbca-date-font-size' ).val(field['dateFontSize']);
 				$( '#dpbca-date-font-color' ).val(field['dateFontColor']);
-				$( '#dpbca-date-padding' ).val(field['dateDadding']);
+				$( '#dpbca-date-padding' ).val(field['datePadding']);
 				$( '#dpbca-date-background-color' ).val(field['dateBackgroundColor']);
 				$( '#dpbca-highlighted-date-font-size' ).val(field['highlatedDateFontSize']);
+				$( '#dpbca-highlighted-date-line-height' ).val(field['highlatedDateLineHeight']);
 				$( '#dpbca-highlighted-date-font-color' ).val(field['highlatedDateFontColor']);
 				$( '#dpbca-highlighted-date-background-color' ).val(field['highlatedDateBackgroundColor']);
 				$( '#dpbca-highlighted-date-border-radius' ).val(field['highlatedDateBorderRadius']);
+				$( '#dpbca-disabled-date-color' ).val(field['disableDateColor']);
+				$( '#dpbca-disabled-date-background-color' ).val(field['disableDateBackgroundColor']);
 				$( '#dpbca-footer-background-color' ).val(field['footerBackgroundColor']);
 				$( '#dpbca-footer-font-color' ).val(field['footerFontColor']);
 				$( '#dpbca-footer-arrow-color' ).val(field['footerArrowColor']);
 				$( '#dpbca-footer-arrow-size' ).val(field['footerArrowSize']);
 				$( '#dpbca-footer-font-size' ).val(field['footerFontSize']);
-				$( '#dpbca-disabled-date-color' ).val(field['disableDateColor']);
 	            // if our desired condition is met, we show the field setting; otherwise, hide it
 	            if( GetInputType( field ) == 'date' ) {
 	                $( '.dpb-calendar-appearance-setting' ).show();
